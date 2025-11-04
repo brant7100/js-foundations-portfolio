@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -50,44 +51,56 @@
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-  async function loadList() {
-    try {
-      const res = await fetch('./logs.json?_=' + Date.now());
-      const data = await res.json();
-      console.log("📂 logs.json 데이터:", data);
+  <script>
+    async function loadList() {
+      try {
+const res = await fetch('./logs.json?_=' + Date.now());
+const data = await res.json();
+console.log("📂 logs.json 데이터:", data); // ← 추가
+const ul = document.getElementById('log-list');
+ul.innerHTML = '';
+if (!data.items) {
+  ul.innerHTML = '<li>⚠️ logs.json에 items가 없습니다.</li>';
+  return;
+}
+data.items
+  .sort((a,b) => (a.date < b.date ? 1 : -1))
+  .forEach(item => {
 
-      const ul = document.getElementById('log-list');
-      ul.innerHTML = '';
-
-      if (!data.items) {
-        ul.innerHTML = '<li>⚠️ logs.json에 items가 없습니다.</li>';
-        return;
+            const li = document.createElement('li');
+            li.innerHTML = \`
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-weight:600;">\${item.title}</div>
+                  <div class="muted">\${item.date}</div>
+                </div>
+                <div>\${
+                  (item.tags||[]).map(t => '<span class="tag">'+t+'</span>').join('')
+                }</div>
+              </div>\`;
+            li.addEventListener('click', () => loadMarkdown(item.path));
+            ul.appendChild(li);
+          });
+      } catch (e) {
+        console.error(e);
+        document.getElementById('viewer').innerHTML = '<p>logs.json을 불러오지 못했습니다. 파일 경로를 확인하세요.</p>';
       }
-
-      data.items
-        .sort((a,b) => (a.date < b.date ? 1 : -1))
-        .forEach(item => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div>
-                <div style="font-weight:600;">${item.title}</div>
-                <div class="muted">${item.date}</div>
-              </div>
-              <div>
-                ${(item.tags||[]).map(t => '<span class="tag">'+t+'</span>').join('')}
-              </div>
-            </div>`;
-          li.addEventListener('click', () => loadMarkdown(item.path));
-          ul.appendChild(li);
-        });
-    } catch (e) {
-      console.error(e);
-      document.getElementById('viewer').innerHTML = '<p>logs.json을 불러오지 못했습니다. 파일 경로를 확인하세요.</p>';
     }
-  }
-</script>
 
+    async function loadMarkdown(path) {
+      const viewer = document.getElementById('viewer');
+      try {
+        const res = await fetch(path + '?_=' + Date.now());
+        const md = await res.text();
+        viewer.innerHTML = marked.parse(md);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        console.error(e);
+        viewer.innerHTML = '<p>마크다운 파일을 불러오지 못했습니다.</p>';
+      }
+    }
+
+    loadList();
+  </script>
 </body>
 </html>
