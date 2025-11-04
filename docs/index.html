@@ -1,10 +1,9 @@
-
 <!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>학습 포트폴리오</title>
+  <title>JS 학습 포트폴리오</title>
   <style>
     :root {
       --bg: #0b0b0c;
@@ -14,76 +13,76 @@
       --accent: #5da8ff;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; }
-    .wrap { display: grid; grid-template-columns: 320px 1fr; min-height: 100vh; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans KR', sans-serif; }
+    .wrap { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
     aside { background: var(--panel); padding: 20px; border-right: 1px solid #22252b; }
     main { padding: 24px; }
-    h1 { margin: 0 0 12px; font-size: 20px; }
-    .muted { color: var(--muted); font-size: 12px; }
+    h1 { font-size: 20px; margin: 0 0 10px; }
     ul { list-style: none; padding: 0; margin: 12px 0 0; }
-    li { padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #262a32; margin-bottom: 8px; }
+    li { padding: 10px; border: 1px solid #2b3038; border-radius: 8px;
+      margin-bottom: 8px; cursor: pointer; }
     li:hover { background: #0f1115; }
-    .tag { display: inline-block; font-size: 11px; padding: 2px 6px; border: 1px solid #2b3038; border-radius: 999px; margin-right: 4px; color: var(--muted); }
+    .tag { display:inline-block; font-size:11px; padding:2px 6px;
+      border:1px solid #333; border-radius:999px; margin-right:4px; color:var(--muted); }
+    .muted { color: var(--muted); font-size: 12px; }
     .content { max-width: 900px; line-height: 1.6; }
-    .content h1, .content h2, .content h3 { color: #fff; }
-    .content code { background: #0f1115; padding: 2px 6px; border-radius: 4px; }
-    .content pre { background: #0f1115; padding: 12px; border-radius: 8px; overflow: auto; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; }
-    .brand { font-weight: 700; letter-spacing: .3px; }
+    .content code { background:#0f1115; padding:2px 6px; border-radius:4px; }
+    .content pre { background:#0f1115; padding:12px; border-radius:8px; overflow:auto; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <aside>
-      <div class="header">
-        <div class="brand">JS 학습 포트폴리오</div>
-      </div>
-      <div class="muted">logs.json의 항목을 클릭하면 우측에 내용이 표시됩니다.</div>
+      <h1>📚 JS 학습 포트폴리오</h1>
+      <p class="muted">왼쪽 목록을 클릭하면 오른쪽에 내용이 표시됩니다.</p>
       <ul id="log-list"></ul>
     </aside>
     <main>
       <div class="content" id="viewer">
         <h2>환영 👋</h2>
-        <p>왼쪽 목록에서 학습 로그를 선택하세요.<br/>새 로그는 <code>docs/logs</code>에 마크다운으로 추가하고 <code>docs/logs.json</code>에 등록합니다.</p>
+        <p>새 학습 로그를 작성하려면 <code>docs/logs/</code>에
+          마크다운 파일을 만들고, <code>docs/logs.json</code>에 항목을 추가하세요.</p>
       </div>
     </main>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     async function loadList() {
+      const ul = document.getElementById('log-list');
       try {
-const res = await fetch('./logs.json?_=' + Date.now());
-const data = await res.json();
-console.log("📂 logs.json 데이터:", data); // ← 추가
-const ul = document.getElementById('log-list');
-ul.innerHTML = '';
-if (!data.items) {
-  ul.innerHTML = '<li>⚠️ logs.json에 items가 없습니다.</li>';
-  return;
-}
-data.items
-  .sort((a,b) => (a.date < b.date ? 1 : -1))
-  .forEach(item => {
+        const res = await fetch('./logs.json?_=' + Date.now());
+        const data = await res.json();
 
-            const li = document.createElement('li');
-            li.innerHTML = \`
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                  <div style="font-weight:600;">\${item.title}</div>
-                  <div class="muted">\${item.date}</div>
-                </div>
-                <div>\${
-                  (item.tags||[]).map(t => '<span class="tag">'+t+'</span>').join('')
-                }</div>
-              </div>\`;
-            li.addEventListener('click', () => loadMarkdown(item.path));
-            ul.appendChild(li);
-          });
-      } catch (e) {
-        console.error(e);
-        document.getElementById('viewer').innerHTML = '<p>logs.json을 불러오지 못했습니다. 파일 경로를 확인하세요.</p>';
+        if (!data.items || data.items.length === 0) {
+          ul.innerHTML = '<li>등록된 로그가 없습니다.</li>';
+          return;
+        }
+
+        ul.innerHTML = data.items
+          .sort((a, b) => (a.date < b.date ? 1 : -1))
+          .map(item => {
+            const tags = (item.tags || [])
+              .map(t => `<span class="tag">${t}</span>`)
+              .join('');
+            return `
+              <li data-path="${item.path}">
+                <div><strong>${item.title}</strong></div>
+                <div class="muted">${item.date}</div>
+                <div>${tags}</div>
+              </li>
+            `;
+          })
+          .join('');
+
+        ul.querySelectorAll('li').forEach(li => {
+          li.addEventListener('click', () => loadMarkdown(li.dataset.path));
+        });
+
+      } catch (err) {
+        console.error(err);
+        ul.innerHTML = '<li>⚠️ logs.json을 불러올 수 없습니다.</li>';
       }
     }
 
@@ -94,9 +93,9 @@ data.items
         const md = await res.text();
         viewer.innerHTML = marked.parse(md);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (e) {
-        console.error(e);
-        viewer.innerHTML = '<p>마크다운 파일을 불러오지 못했습니다.</p>';
+      } catch (err) {
+        console.error(err);
+        viewer.innerHTML = '<p>⚠️ 마크다운 파일을 불러올 수 없습니다.</p>';
       }
     }
 
