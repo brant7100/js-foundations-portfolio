@@ -53,13 +53,19 @@
   <script>
     async function loadList() {
       try {
-        const res = await fetch('./logs.json?_=' + Date.now());
-        const data = await res.json();
-        const ul = document.getElementById('log-list');
-        ul.innerHTML = '';
-        data.items
-          .sort((a,b) => (a.date < b.date ? 1 : -1))
-          .forEach(item => {
+const res = await fetch('./logs.json?_=' + Date.now());
+const data = await res.json();
+console.log("📂 logs.json 데이터:", data); // ← 추가
+const ul = document.getElementById('log-list');
+ul.innerHTML = '';
+if (!data.items) {
+  ul.innerHTML = '<li>⚠️ logs.json에 items가 없습니다.</li>';
+  return;
+}
+data.items
+  .sort((a,b) => (a.date < b.date ? 1 : -1))
+  .forEach(item => {
+
             const li = document.createElement('li');
             li.innerHTML = \`
               <div style="display:flex;justify-content:space-between;align-items:center;">
